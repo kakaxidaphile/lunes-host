@@ -1,53 +1,16 @@
-name: Lunes Auto Login(Sweet-Node6-US)
+name: lunes-keepalive
 
 on:
-  workflow_dispatch:
   schedule:
-    # 每天北京/河内/曼谷时区（UTC+7）07:00 执行一次（按需调整）
-    - cron: "26 7 */4 * *"  # GitHub 使用 UTC，这里是 UTC 23:00 ≈ 亚洲/曼谷 07:00
+    - cron: "0 0 */7 * *"   # 每 7 天一次
+  workflow_dispatch:
 
 jobs:
-  login:
+  keepalive:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    env:
-      # 从 GitHub Secrets 注入
-      LUNES_USERNAME: ${{ secrets.LUNES_USERNAME }}
-      LUNES_PASSWORD: ${{ secrets.LUNES_PASSWORD }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install deps
+      - name: ping ctrl.lunes.host
         run: |
-          npm ci || npm i
-          npx playwright install --with-deps chromium
-
-      - name: Run login
-        run: |
-          node -v
-          npm -v
-          npm run login
-        continue-on-error: true
-
-      - name: Archive screenshots & logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-and-logs
-          path: |
-            *.png
-          if-no-files-found: ignore
-
-      - name: Fail job if script failed
-        if: ${{ steps.login.outcome == 'failure' }}
-        run: exit 1
+          curl -L \
+            -A "Mozilla/5.0 (Macintosh; Intel Mac OS X)" \
+            https://ctrl.lunes.host/
